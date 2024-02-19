@@ -1,0 +1,382 @@
+CSCE 5218 / CSCE 4930 Deep Learning
+HW1a The Perceptron (20 pt)
+# Get the datasets
+!curl --output train.dat http://huang.eng.unt.edu/CSCE-5218/train.dat
+!curl --output test.dat http://huang.eng.unt.edu/CSCE-5218/test.dat
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 11244  100 11244    0     0   225k      0 --:--:-- --:--:-- --:--:--  228k
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  2844  100  2844    0     0   104k      0 --:--:-- --:--:-- --:--:--  106k
+# Take a peek at the datasets
+!head train.dat
+!head test.dat
+A1	A2	A3	A4	A5	A6	A7	A8	A9	A10	A11	A12	A13	
+1	1	0	0	0	0	0	0	1	1	0	0	1	0
+0	0	1	1	0	1	1	0	0	0	0	0	1	0
+0	1	0	1	1	0	1	0	1	1	1	0	1	1
+0	0	1	0	0	1	0	1	0	1	1	1	1	0
+0	1	0	0	0	0	0	1	1	1	1	1	1	0
+0	1	1	1	0	0	0	1	0	1	1	0	1	1
+0	1	1	0	0	0	1	0	0	0	0	0	1	0
+0	0	0	1	1	0	1	1	1	0	0	0	1	0
+0	0	0	0	0	0	1	0	1	0	1	0	1	0
+A1	A2	A3	A4	A5	A6	A7	A8	A9	A10	A11	A12	A13
+1	1	1	1	0	0	1	1	0	0	0	1	1	0
+0	0	0	1	0	0	1	1	0	1	0	0	1	0
+0	1	1	1	0	1	1	1	1	0	0	0	1	0
+0	1	1	0	1	0	1	1	1	0	1	0	1	0
+0	1	0	0	0	1	0	1	0	1	0	0	1	0
+0	1	1	0	0	1	1	1	1	1	1	0	1	0
+0	1	1	1	0	0	1	1	0	0	0	1	1	0
+0	1	0	0	1	0	0	1	1	0	1	1	1	0
+1	1	1	1	0	0	1	1	0	0	0	0	1	0
+Build the Perceptron Model
+You will need to complete some of the function definitions below. DO NOT import any other libraries to complete this.
+
+import math
+import itertools
+import re
+
+
+# Corpus reader, all columns but the last one are coordinates;
+#   the last column is the label
+def read_data(file_name):
+    f = open(file_name, 'r')
+
+    data = []
+    # Discard header line
+    f.readline()
+    for instance in f.readlines():
+        if not re.search('\t', instance): continue
+        instance = list(map(int, instance.strip().split('\t')))
+        # Add a dummy input so that w0 becomes the bias
+        instance = [-1] + instance
+        data += [instance]
+    return data
+
+
+def dot_product(array1, array2):
+    #TODO: Return dot product of array 1 and array 2
+    return NotImplemented 
+
+
+def sigmoid(x):
+    #TODO: Return outpout of sigmoid function on x
+    return NotImplemented
+
+# The output of the model, which for the perceptron is 
+# the sigmoid function applied to the dot product of 
+# the instance and the weights
+def output(weight, instance):
+    #TODO: return the output of the model 
+    return NotImplemented
+
+# Predict the label of an instance; this is the definition of the perceptron
+# you should output 1 if the output is >= 0.5 else output 0
+def predict(weights, instance):
+    #TODO: return the prediction of the model
+    return NotImplemented
+
+
+# Accuracy = percent of correct predictions
+def get_accuracy(weights, instances):
+    # You do not to write code like this, but get used to it
+    correct = sum([1 if predict(weights, instance) == instance[-1] else 0
+                   for instance in instances])
+    return correct * 100 / len(instances)
+
+
+# Train a perceptron with instances and hyperparameters:
+#       lr (learning rate) 
+#       epochs
+# The implementation comes from the definition of the perceptron
+#
+# Training consists on fitting the parameters which are the weights
+# that's the only thing training is responsible to fit
+# (recall that w0 is the bias, and w1..wn are the weights for each coordinate)
+#
+# Hyperparameters (lr and epochs) are given to the training algorithm
+# We are updating weights in the opposite direction of the gradient of the error,
+# so with a "decent" lr we are guaranteed to reduce the error after each iteration.
+def train_perceptron(instances, lr, epochs):
+
+    #TODO: name this step
+    weights = [0] * (len(instances[0])-1)
+
+    for _ in range(epochs):
+        for instance in instances:
+            #TODO: name these steps
+            in_value = dot_product(weights, instance)
+            output = sigmoid(in_value)
+            error = instance[-1] - output
+            #TODO: name these steps
+            for i in range(0, len(weights)):
+                weights[i] += lr * error * output * (1-output) * instance[i]
+
+    return weights
+Run it
+import math
+import itertools
+import re
+
+def read_data(file_name):
+  f = open(file_name, 'r')
+
+  data = []
+  # Discard header line
+  f.readline()
+  for instance in f.readlines():
+    if not re.search('\t', instance): continue
+    instance = list(map(int, instance.strip().split('\t')))
+    # Add a dummy input so that w0 becomes the bias
+    instance = [-1] + instance
+    data += [instance]
+  return data
+
+def dot_product(array1, array2):
+  return sum(w * x for w, x in zip(array1, array2))
+
+def sigmoid(x):
+  return 1 / (1 + math.exp(-x))
+
+def output(weights, instance):
+  dot_product_sum = dot_product(weights, instance)
+  return sigmoid(dot_product_sum)
+
+def predict(weights, instance):
+  output_value = output(weights, instance)
+  return 1 if output_value >= 0.5 else 0
+
+def get_accuracy(weights, instances):
+  correct = sum(predict(weights, instance) == instance[-1] for instance in instances)
+  return correct * 100 / len(instances)
+
+def train_perceptron(instances, lr, epochs):
+  weights = [0] * (len(instances[0])-1)
+
+  for _ in range(epochs):
+    for instance in instances:
+      in_value = dot_product(weights, instance)
+      output = sigmoid(in_value)
+      error = instance[-1] - output
+      for i in range(len(weights)):
+        weights[i] += lr * error * output * (1-output) * instance[i]
+
+  return weights
+
+# Load the data
+instances_tr = read_data("train.dat")
+instances_te = read_data("test.dat")
+
+# Set hyperparameters
+lr = 0.005
+epochs = 5
+
+# Train the perceptron model
+weights = train_perceptron(instances_tr, lr, epochs)
+
+# Evaluate accuracy on the test set
+accuracy = get_accuracy(weights, instances_te)
+
+# Print results
+print(f"#tr: {len(instances_tr):3}, epochs: {epochs:3}, learning rate: {lr:.3f}; "
+      f"Accuracy (test, {len(instances_te)} instances): {accuracy:.1f}")
+#tr: 400, epochs:   5, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+ 
+Questions
+Answer the following questions. Include your implementation and the output for each question.
+
+Question 1
+In train_perceptron(instances, lr, epochs), we have the follosing code:
+
+in_value = dot_product(weights, instance)
+output = sigmoid(in_value)
+error = instance[-1] - output
+Why don't we have the following code snippet instead?
+
+output = predict(weights, instance)
+error = instance[-1] - output
+TODO Add your answer here (text only)
+Here for the above following code, 'sigmoid' and 'dot_product' are used for better modularity andd readability.
+dot_product calculates raw weightened sum of inputs and weights, where sigmoid is used for activating functionwhich is common model in perception for non linear decision boundaries.
+For contrast, 'predict' is used to handle completion of tasks including calclations and applying threshold for decision.
+
+Repetitive calculations may arise when using predict directly if you also require the raw output (used in error calculation).You can control more about the why and when of these processes by using separate functions.
+
+By comimg straight, To improve code readability, performance, and modularity, independent functions 'dot_product' and'sigmoid' are used instead of using 'predict' directly. Each function is responsible for specific calculations required by the perceptron algorithm. 'dot_product' calculates the weighted sum of inputs and weights, whereas'sigmoid' uses the activation function. 'Predict', on the other hand, refers to the full prediction process, including calculations and decision-making. This separation raises readability and reduces potential redundancy in calculations, particularly when raw output is required. Also, it clarifies the basic mathematical steps and allows for possible optimization. While both approaches could lead to the same result, the one we use supports code clarity and maintainability inside the perceptron training context.
+
+Question 2
+Train the perceptron with the following hyperparameters and calculate the accuracy with the test dataset.
+
+tr_percent = [5, 10, 25, 50, 75, 100] # percent of the training dataset to train with
+num_epochs = [5, 10, 20, 50, 100]              # number of epochs
+lr = [0.005, 0.01, 0.05]              # learning rate
+TODO: Write your code below and include the output at the end of each training loop (NOT AFTER EACH EPOCH) of your code.The output should look like the following:
+
+# tr:  20, epochs:   5, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+# tr:  20, epochs:  10, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+# tr:  20, epochs:  20, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+[and so on for all the combinations]
+You will get different results with different hyperparameters.
+
+TODO Add your answer here (code and output in the format above)
+import itertools
+
+tr_percent = [5, 10, 25, 50, 75, 100]  # percent of the training dataset to train with
+num_epochs = [5, 10, 20, 50, 100]  # number of epochs
+lr = [0.005, 0.01, 0.05]  # learning rate
+
+for tr_p, epochs, lr_val in itertools.product(tr_percent, num_epochs, lr):
+    num_instances_tr = int(len(instances_tr) * (tr_p / 100))
+    instances_tr_subset = instances_tr[:num_instances_tr]
+
+    weights = train_perceptron(instances_tr_subset, lr_val, epochs)
+    accuracy = get_accuracy(weights, instances_te)
+
+    print(f"#tr: {num_instances_tr:3}, epochs: {epochs:3}, learning rate: {lr_val:.3f}; "
+          f"Accuracy (test, {len(instances_te)} instances): {accuracy:.1f}")
+#tr:  20, epochs:   5, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr:  20, epochs:   5, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr:  20, epochs:   5, learning rate: 0.050; Accuracy (test, 100 instances): 68.0
+#tr:  20, epochs:  10, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr:  20, epochs:  10, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr:  20, epochs:  10, learning rate: 0.050; Accuracy (test, 100 instances): 68.0
+#tr:  20, epochs:  20, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr:  20, epochs:  20, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr:  20, epochs:  20, learning rate: 0.050; Accuracy (test, 100 instances): 68.0
+#tr:  20, epochs:  50, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr:  20, epochs:  50, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr:  20, epochs:  50, learning rate: 0.050; Accuracy (test, 100 instances): 68.0
+#tr:  20, epochs: 100, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr:  20, epochs: 100, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr:  20, epochs: 100, learning rate: 0.050; Accuracy (test, 100 instances): 64.0
+#tr:  40, epochs:   5, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr:  40, epochs:   5, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr:  40, epochs:   5, learning rate: 0.050; Accuracy (test, 100 instances): 68.0
+#tr:  40, epochs:  10, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr:  40, epochs:  10, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr:  40, epochs:  10, learning rate: 0.050; Accuracy (test, 100 instances): 68.0
+#tr:  40, epochs:  20, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr:  40, epochs:  20, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr:  40, epochs:  20, learning rate: 0.050; Accuracy (test, 100 instances): 68.0
+#tr:  40, epochs:  50, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr:  40, epochs:  50, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr:  40, epochs:  50, learning rate: 0.050; Accuracy (test, 100 instances): 71.0
+#tr:  40, epochs: 100, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr:  40, epochs: 100, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr:  40, epochs: 100, learning rate: 0.050; Accuracy (test, 100 instances): 69.0
+#tr: 100, epochs:   5, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr: 100, epochs:   5, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr: 100, epochs:   5, learning rate: 0.050; Accuracy (test, 100 instances): 68.0
+#tr: 100, epochs:  10, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr: 100, epochs:  10, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr: 100, epochs:  10, learning rate: 0.050; Accuracy (test, 100 instances): 67.0
+#tr: 100, epochs:  20, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr: 100, epochs:  20, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr: 100, epochs:  20, learning rate: 0.050; Accuracy (test, 100 instances): 70.0
+#tr: 100, epochs:  50, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr: 100, epochs:  50, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr: 100, epochs:  50, learning rate: 0.050; Accuracy (test, 100 instances): 74.0
+#tr: 100, epochs: 100, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr: 100, epochs: 100, learning rate: 0.010; Accuracy (test, 100 instances): 71.0
+#tr: 100, epochs: 100, learning rate: 0.050; Accuracy (test, 100 instances): 77.0
+#tr: 200, epochs:   5, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr: 200, epochs:   5, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr: 200, epochs:   5, learning rate: 0.050; Accuracy (test, 100 instances): 71.0
+#tr: 200, epochs:  10, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr: 200, epochs:  10, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr: 200, epochs:  10, learning rate: 0.050; Accuracy (test, 100 instances): 77.0
+#tr: 200, epochs:  20, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr: 200, epochs:  20, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr: 200, epochs:  20, learning rate: 0.050; Accuracy (test, 100 instances): 78.0
+#tr: 200, epochs:  50, learning rate: 0.005; Accuracy (test, 100 instances): 67.0
+#tr: 200, epochs:  50, learning rate: 0.010; Accuracy (test, 100 instances): 74.0
+#tr: 200, epochs:  50, learning rate: 0.050; Accuracy (test, 100 instances): 78.0
+#tr: 200, epochs: 100, learning rate: 0.005; Accuracy (test, 100 instances): 74.0
+#tr: 200, epochs: 100, learning rate: 0.010; Accuracy (test, 100 instances): 78.0
+#tr: 200, epochs: 100, learning rate: 0.050; Accuracy (test, 100 instances): 76.0
+#tr: 300, epochs:   5, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr: 300, epochs:   5, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr: 300, epochs:   5, learning rate: 0.050; Accuracy (test, 100 instances): 74.0
+#tr: 300, epochs:  10, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr: 300, epochs:  10, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr: 300, epochs:  10, learning rate: 0.050; Accuracy (test, 100 instances): 78.0
+#tr: 300, epochs:  20, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr: 300, epochs:  20, learning rate: 0.010; Accuracy (test, 100 instances): 70.0
+#tr: 300, epochs:  20, learning rate: 0.050; Accuracy (test, 100 instances): 79.0
+#tr: 300, epochs:  50, learning rate: 0.005; Accuracy (test, 100 instances): 74.0
+#tr: 300, epochs:  50, learning rate: 0.010; Accuracy (test, 100 instances): 78.0
+#tr: 300, epochs:  50, learning rate: 0.050; Accuracy (test, 100 instances): 78.0
+#tr: 300, epochs: 100, learning rate: 0.005; Accuracy (test, 100 instances): 78.0
+#tr: 300, epochs: 100, learning rate: 0.010; Accuracy (test, 100 instances): 80.0
+#tr: 300, epochs: 100, learning rate: 0.050; Accuracy (test, 100 instances): 77.0
+#tr: 400, epochs:   5, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr: 400, epochs:   5, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr: 400, epochs:   5, learning rate: 0.050; Accuracy (test, 100 instances): 69.0
+#tr: 400, epochs:  10, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr: 400, epochs:  10, learning rate: 0.010; Accuracy (test, 100 instances): 69.0
+#tr: 400, epochs:  10, learning rate: 0.050; Accuracy (test, 100 instances): 76.0
+#tr: 400, epochs:  20, learning rate: 0.005; Accuracy (test, 100 instances): 69.0
+#tr: 400, epochs:  20, learning rate: 0.010; Accuracy (test, 100 instances): 70.0
+#tr: 400, epochs:  20, learning rate: 0.050; Accuracy (test, 100 instances): 80.0
+#tr: 400, epochs:  50, learning rate: 0.005; Accuracy (test, 100 instances): 73.0
+#tr: 400, epochs:  50, learning rate: 0.010; Accuracy (test, 100 instances): 77.0
+#tr: 400, epochs:  50, learning rate: 0.050; Accuracy (test, 100 instances): 80.0
+#tr: 400, epochs: 100, learning rate: 0.005; Accuracy (test, 100 instances): 77.0
+#tr: 400, epochs: 100, learning rate: 0.010; Accuracy (test, 100 instances): 80.0
+#tr: 400, epochs: 100, learning rate: 0.050; Accuracy (test, 100 instances): 80.0
+instances_tr = read_data("train.dat")
+instances_te = read_data("test.dat")
+tr_percent = [5, 10, 25, 50, 75, 100] # percent of the training dataset to train with
+num_epochs = [5, 10, 20, 50, 100]     # number of epochs
+lr_array = [0.005, 0.01, 0.05]        # learning rate
+
+for lr in lr_array:
+  for tr_size in tr_percent:
+    for epochs in num_epochs:
+      size =  round(len(instances_tr)*tr_size/100)
+      pre_instances = instances_tr[0:size]
+      weights = train_perceptron(pre_instances, lr, epochs)
+      accuracy = get_accuracy(weights, instances_te)
+    print(f"#tr: {len(pre_instances):0}, epochs: {epochs:3}, learning rate: {lr:.3f}; "
+            f"Accuracy (test, {len(instances_te)} instances): {accuracy:.1f}")
+#tr: 20, epochs: 100, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr: 40, epochs: 100, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr: 100, epochs: 100, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+#tr: 200, epochs: 100, learning rate: 0.005; Accuracy (test, 100 instances): 74.0
+#tr: 300, epochs: 100, learning rate: 0.005; Accuracy (test, 100 instances): 78.0
+#tr: 400, epochs: 100, learning rate: 0.005; Accuracy (test, 100 instances): 77.0
+#tr: 20, epochs: 100, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr: 40, epochs: 100, learning rate: 0.010; Accuracy (test, 100 instances): 68.0
+#tr: 100, epochs: 100, learning rate: 0.010; Accuracy (test, 100 instances): 71.0
+#tr: 200, epochs: 100, learning rate: 0.010; Accuracy (test, 100 instances): 78.0
+#tr: 300, epochs: 100, learning rate: 0.010; Accuracy (test, 100 instances): 80.0
+#tr: 400, epochs: 100, learning rate: 0.010; Accuracy (test, 100 instances): 80.0
+#tr: 20, epochs: 100, learning rate: 0.050; Accuracy (test, 100 instances): 64.0
+#tr: 40, epochs: 100, learning rate: 0.050; Accuracy (test, 100 instances): 69.0
+#tr: 100, epochs: 100, learning rate: 0.050; Accuracy (test, 100 instances): 77.0
+#tr: 200, epochs: 100, learning rate: 0.050; Accuracy (test, 100 instances): 76.0
+#tr: 300, epochs: 100, learning rate: 0.050; Accuracy (test, 100 instances): 77.0
+#tr: 400, epochs: 100, learning rate: 0.050; Accuracy (test, 100 instances): 80.0
+Question 3
+Write a couple paragraphs interpreting the results with all the combinations of hyperparameters. Drawing a plot will probably help you make a point. In particular, answer the following:
+
+A. Do you need to train with all the training dataset to get the highest accuracy with the test dataset?
+B. How do you justify that training the second run obtains worse accuracy than the first one (despite the second one uses more training data)?
+#tr: 100, epochs:  20, learning rate: 0.050; Accuracy (test, 100 instances): 71.0
+#tr: 200, epochs:  20, learning rate: 0.005; Accuracy (test, 100 instances): 68.0
+C. Can you get higher accuracy with additional hyperparameters (higher than 80.0)?
+D. Is it always worth training for more epochs (while keeping all other hyperparameters fixed)?
+TODO: Add your answer here (code and text)
+Answers:
+Answer for A: No, Based on the above executions as Although we train with all the training dataset to get high accuracy with test dataset, the dataset it self was very small for which we verified from plot. So we can gain 80% accuracy with 300 train records.Considering that the data is free of noise and outliers, we could want more data for a larger dataset in order to train a generated model.
+
+Answer for B: The model is unable to converge to minimum in the second run due to a lower learning rate of 0.005, even with a higher percentage of the training dataset. Simply stated, weights are not updated or trained to approach the minimum. Thus, the accuracy is decreased in the second run since we are not receiving the best updated weights.
+
+It's because, despite running more instances in the second run than the first, we failed to achieve convergence. It is evident that we used a higher learning rate in the first output, which indicates a bigger slope towards convergence, in the result indicated in B. If the number of epochs is increased in the second run, however, the outcome might be better than the first. Furthermore, because there are more instances in the second run of the model than in the first, it attempts to generalize to all cases.
+
+Answer for C: Yes, we can get high accuracy with additional hyperparameters as it can be increased by adding another hyper layer to have 80% accuracy but it needs to be tested and using ReLu can be good for it should be tested before using it.
+
+Answer for D: No, it was not worth of training more epochs,because low epochs are good to get best ccuracy and which more
